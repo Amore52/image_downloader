@@ -1,58 +1,40 @@
 import requests
-import os
-import urllib
-from datetime import datetime
+import argparse
 
-filename_path = 'images/'
-image_url = 'https://api.nasa.gov/planetary/apod'
-params = {
-          'api_key' : '9cAIMsmCSSeurXh4AXXj0YVNgSLje1BQOnURuLNU',
-          'count' : 10
-         }
-
-
-def get_image_extension(image_url):
-    _, extension = os.path.splitext(image_url)
-    return extension
-
-
-def get_some_photo (image_url, filename_path):
-    response = requests.get(image_url, params=params)
-    response.raise_for_status()
-    data = response.json()
-    for idx, item in enumerate(data):
-        image_url = item.get('url')
-        if image_url:
-            image_extension = get_image_extension(image_url)
-            print(f"URL = {image_url}, Расширение = {image_extension}")
-            image_response = requests.get(image_url)
-            image_response.raise_for_status()
-            with open(os.path.join(filename_path, f'image_{idx + 1}{image_extension}'), 'wb') as file:
-                file.write(image_response.content)
+from config import filename_path
+from fetch_earth_photos import get_earth_photos
+from fetch_space_apod_photo import get_apod_photo
+from fetch_spacex_images import get_space_image
 
 
 
-def get_earth_photos(num_photos=5):
-    epic_api_url = 'https://api.nasa.gov/EPIC/api/natural/images'
-    params = {
-        'api_key': '9cAIMsmCSSeurXh4AXXj0YVNgSLje1BQOnURuLNU'  # Замените на свой API-ключ
-    }
-    response = requests.get(epic_api_url, params=params)
-    response.raise_for_status()
-    data = response.json()
+def main(action, launch_id=None, num_photos=None):
+    if action == 'space':
+        image_url = (
+            f'https://api.spacexdata.com/v5/launches/{launch_id}' if launch_id
+            else requests.get('https://api.spacexdata.com/v5/launches/latest').json()['links']['flickr']['original']
+        )
+        get_space_image(image_url, filename_path)
 
-    for photo in data[:num_photos]:
-        date_str = photo['date']
-        image_name = photo['image']
-        date_time = datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
-        formatted_date = date_time.strftime('%Y/%m/%d')
-        image_url = f'https://epic.gsfc.nasa.gov/archive/natural/{formatted_date}/png/{image_name}.png'
-        image_response = requests.get(image_url)
-        image_response.raise_for_status()
-        with open(f'image_{image_name}.png', 'wb') as file:
-            file.write(image_response.content)
-            print(f'Скачано: {image_url}')
+    elif action == 'earth':
+        if num_photos:
+            get_earth_photos(num_photos)
+        else:
+            print("Необходимо указать количество фотографий для получения.")
 
+    elif action == 'apod':
+        if num_photos:
+            get_apod_photo(num_photos)
+        else:
+            print("Необходимо указать количество фотографий NASA для получения.")
 
-get_earth_photos(1)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description='Получить изображения запусков SpaceX, фотографии Земли или NASA APOD.')
+    parser.add_argument('--action', choices=['space', 'earth', 'apod'], required=True,
+                        help='Выберите действие: "space" для изображений SpaceX, "earth" для фотографий Земли или "apod" для фотографий космоса NASA.')
+    parser.add_argument('--launch_id', type=str, help='ID запуска SpaceX для получения изображений')
+    parser.add_argument('--num_photos', type=int, help='Количество фотографий для получения.')
 
+    args = parser.parse_args()
+    main(args.action, args.launch_id, args.num_photos)
