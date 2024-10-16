@@ -1,9 +1,13 @@
-from envparse import env
+import os
+
+from dotenv import load_dotenv
 
 
-delay = env('DELAY', default=14400, cast=int)
-env.read_envfile('.env')
-nasa_token = env('NASA_TOKEN')
+
+load_dotenv()
+
+delay = os.getenv('DELAY', 14400)
+nasa_token = os.getenv('NASA_TOKEN')
 filename_path = './images/'
-tg_token = env('TG_TOKEN')
-chat_id = env('CHAT_ID')
+tg_bot_token = os.getenv('TG_BOT_TOKEN')
+tg_chat_id = os.getenv('TG_CHAT_ID')
