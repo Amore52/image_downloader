@@ -1,18 +1,12 @@
 import os
 import random
+import sys
 import telegram
 import asyncio
+import argparse
+from config import filename_path, tg_bot_token, tg_chat_id, delay
 
-from config import filename_path, tg_token, chat_id, delay
-
-
-
-published_images = set()
-bot = telegram.Bot(token=tg_token)
-
-async def send_photos(image_to_send=None):
-    published_images = set()
-
+async def send_photos(bot, published_images, image_to_send=None):
     while True:
         images = [img for img in os.listdir(filename_path) if img.endswith(('.jpg', '.png'))]
 
@@ -28,30 +22,35 @@ async def send_photos(image_to_send=None):
         for image in images:
             if image not in published_images:
                 with open(os.path.join(filename_path, image), 'rb') as photo:
-                    await bot.send_photo(chat_id, photo)
+                    await bot.send_photo(tg_chat_id, photo)
                 published_images.add(image)
                 print(f"Фото {image} успешно размещено.")
                 await asyncio.sleep(delay)
 
         published_images.clear()
 
-
-async def choice_selection_image():
-    images = [img for img in os.listdir(filename_path) if img.endswith(('.jpg', '.png'))]
-    if not images:
-        print("Нет изображений для отправки.")
-        return None
-
-    print("Выберите изображение для отправки (или нажмите Enter для случайного):")
-    for idx, img in enumerate(images):
-        print(f"{idx + 1}. {img}")
-
-    choice = input("Введите номер изображения: ")
+def choice_selection_image(images, choice):
     if choice.isdigit() and 1 <= int(choice) <= len(images):
         return images[int(choice) - 1]
     return None
 
+def main():
+    parser = argparse.ArgumentParser(description='Send images to Telegram.')
+    parser.add_argument('--image', type=int, help='Number of the image to send.')
+    args = parser.parse_args()
+
+    published_images = set()
+    bot = telegram.Bot(token=tg_bot_token)
+
+    images = [img for img in os.listdir(filename_path) if img.endswith(('.jpg', '.png'))]
+
+    if args.image is not None:
+        image_choice = choice_selection_image(images, str(args.image))
+    else:
+        random.shuffle(images)
+        image_choice = images[0]
+
+    asyncio.run(send_photos(bot, published_images, image_choice))
 
 if __name__ == "__main__":
-    image_choice = asyncio.run(choice_selection_image())
-    asyncio.run(send_photos(image_choice))
+    main()
