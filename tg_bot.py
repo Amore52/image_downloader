@@ -1,6 +1,5 @@
 import os
 import random
-import sys
 import telegram
 import asyncio
 import argparse
