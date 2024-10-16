@@ -16,7 +16,7 @@
 - Библиотеки:
   - `requests`
   - `python-telegram-bot`
-  - `envparse`
+  - `load_dotenv`
 
 ## Установка
 
@@ -27,7 +27,7 @@
    
 2. Установите необходимые пакеты:
     ```
-    pip install requests python-telegram-bot envparse
+    pip install -r requirements.txt
    
 3. Создайте файл .env в корневом каталоге и добавьте свой ключ API NASA и токен бота Телеграм:
     ```
