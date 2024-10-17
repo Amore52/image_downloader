@@ -36,8 +36,8 @@ def choice_selection_image(images, choice):
     return None
 
 def main():
-    parser = argparse.ArgumentParser(description='Send images to Telegram.')
-    parser.add_argument('--image', type=int, help='Number of the image to send.')
+    parser = argparse.ArgumentParser(description='Отправить фото в чат.')
+    parser.add_argument('--image', type=int, help='Номер индекма фото.')
     args = parser.parse_args()
 
     bot = telegram.Bot(token=tg_bot_token)
