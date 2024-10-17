@@ -1,10 +1,9 @@
 import requests
-from config import nasa_token, filename_path
 from utils import download_image
 
 
 
-def get_apod_photos(count=1):
+def get_apod_photos(nasa_token, filename_path, count=1):
     response = requests.get('https://api.nasa.gov/planetary/apod', params={'api_key': nasa_token, 'count': count})
     response.raise_for_status()
     images_info = response.json()

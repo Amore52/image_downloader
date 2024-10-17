@@ -3,7 +3,9 @@ import random
 import telegram
 import asyncio
 import argparse
-from config import filename_path, tg_bot_token, tg_chat_id, delay
+
+from dotenv import load_dotenv
+
 
 async def send_photos(bot, published_images, image_to_send=None):
     while True:
@@ -38,18 +40,17 @@ def main():
     parser.add_argument('--image', type=int, help='Number of the image to send.')
     args = parser.parse_args()
 
-    published_images = set()
     bot = telegram.Bot(token=tg_bot_token)
 
     images = [img for img in os.listdir(filename_path) if img.endswith(('.jpg', '.png'))]
+    image_choice = choice_selection_image(images, str(args.image)) if args.image else random.choice(images)
 
-    if args.image is not None:
-        image_choice = choice_selection_image(images, str(args.image))
-    else:
-        random.shuffle(images)
-        image_choice = images[0]
-
-    asyncio.run(send_photos(bot, published_images, image_choice))
+    asyncio.run(send_photos(bot, image_choice))
 
 if __name__ == "__main__":
+    load_dotenv()
+    tg_bot_token = os.getenv('TG_BOT_TOKEN')
+    tg_chat_id = os.getenv('TG_CHAT_ID')
+    filename_path = './images/'
+    delay = os.getenv('DELAY', 14400)
     main()

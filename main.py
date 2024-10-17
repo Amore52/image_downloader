@@ -1,7 +1,6 @@
-import requests
+import os
 import argparse
-
-from config import filename_path
+from dotenv import load_dotenv
 from fetch_earth_photos import get_earth_photos
 from fetch_space_apod_photo import get_apod_photos
 from fetch_spacex_images import get_space_images
@@ -9,6 +8,9 @@ from fetch_spacex_images import get_space_images
 
 
 def main():
+    load_dotenv()
+    nasa_token = os.getenv('NASA_TOKEN')
+    filename_path = './images/'
 
     parser = argparse.ArgumentParser(
         description='Получить изображения запусков SpaceX, фотографии Земли или NASA APOD.')
@@ -20,24 +22,15 @@ def main():
     args = parser.parse_args()
 
     if args.action == 'space':
-        if args.launch_id:
-            launch_url = f'https://api.spacexdata.com/v5/launches/{args.launch_id}'
-        else:
-            launch_url = requests.get('https://api.spacexdata.com/v5/launches/latest').json()['links']['flickr'][
-                'original']
+        launch_url = f'https://api.spacexdata.com/v5/launches/{args.launch_id}'
         get_space_images(launch_url, filename_path)
 
     elif args.action == 'earth':
-        if args.num_photos:
-            get_earth_photos(args.num_photos)
-        else:
-            print("Необходимо указать количество фотографий для получения.")
+            get_earth_photos(nasa_token, filename_path, args.num_photos)
+
 
     elif args.action == 'apod':
-        if args.num_photos:
-            get_apod_photos(args.num_photos)
-        else:
-            print("Необходимо указать количество фотографий NASA для получения.")
+            get_apod_photos(nasa_token, filename_path, args.num_photos)
 
 
 if __name__ == "__main__":
