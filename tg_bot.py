@@ -36,8 +36,13 @@ def choice_selection_image(images, choice):
     return None
 
 def main():
+    load_dotenv()
+    tg_bot_token = os.getenv('TG_BOT_TOKEN')
+    tg_chat_id = os.getenv('TG_CHAT_ID')
+    filename_path = './images/'
+    delay = os.getenv('DELAY', 14400)
     parser = argparse.ArgumentParser(description='Отправить фото в чат.')
-    parser.add_argument('--image', type=int, help='Номер индекса фото.')
+    parser.add_argument('--index_photo', type=int, help='Номер индекса фото.')
     args = parser.parse_args()
 
     bot = telegram.Bot(token=tg_bot_token)
@@ -48,9 +53,4 @@ def main():
     asyncio.run(send_photos(bot, image_choice))
 
 if __name__ == "__main__":
-    load_dotenv()
-    tg_bot_token = os.getenv('TG_BOT_TOKEN')
-    tg_chat_id = os.getenv('TG_CHAT_ID')
-    filename_path = './images/'
-    delay = os.getenv('DELAY', 14400)
     main()
